@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Generate professional dog search training schedules with customizable reward ratios">
-    <title>Random Reinforcement Schedule Generator</title>
+    <meta name="description" content="Generate random reinforcement schedules with customizable reward ratios for behavioral training and research">
+    <title>Variable Reinforcement Schedule Generator</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
@@ -67,10 +67,41 @@
             const [showResults, setShowResults] = React.useState(false);
 
             const generateSchedule = () => {
-                const probability = 1 / meanRatio;
-                const newSchedule = Array.from({ length: numTrials }, () => 
-                    Math.random() <= probability
-                );
+                // Calculate minimum rewards needed
+                const targetRewards = Math.max(1, Math.round(numTrials / meanRatio));
+                
+                // Generate schedule until we get close to desired ratio
+                let newSchedule;
+                let attempts = 0;
+                const maxAttempts = 100;
+                
+                do {
+                    newSchedule = Array.from({ length: numTrials }, () => false);
+                    
+                    // Randomly distribute exactly targetRewards rewards
+                    let remainingRewards = targetRewards;
+                    let remainingSlots = numTrials;
+                    
+                    for (let i = 0; i < numTrials; i++) {
+                        if (Math.random() < remainingRewards / remainingSlots) {
+                            newSchedule[i] = true;
+                            remainingRewards--;
+                        }
+                        remainingSlots--;
+                    }
+                    
+                    // If we still have rewards to distribute, randomly place them
+                    while (remainingRewards > 0) {
+                        const index = Math.floor(Math.random() * numTrials);
+                        if (!newSchedule[index]) {
+                            newSchedule[index] = true;
+                            remainingRewards--;
+                        }
+                    }
+                    
+                    attempts++;
+                } while (attempts < maxAttempts);
+                
                 setSchedule(newSchedule);
                 setShowResults(true);
             };
@@ -84,7 +115,7 @@
                 <div className="p-4">
                     <div className="card">
                         <h1 className="text-2xl font-bold text-center mb-6">
-                            Random Reinforcement Schedule Generator
+                            Variable Reinforcement Schedule Generator
                         </h1>
                         
                         <div className="space-y-4">
