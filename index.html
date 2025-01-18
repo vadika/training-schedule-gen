@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Generate professional dog search training schedules with customizable reward ratios">
+    <title>Dog Search Training Schedule Generator</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    
+    <!-- React and ReactDOM -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    
+    <style>
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin: 1rem auto;
+            max-width: 32rem;
+            padding: 1.5rem;
+        }
+        
+        .alert {
+            background: #e5edff;
+            border-radius: 0.375rem;
+            margin: 1rem 0;
+            padding: 1rem;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+        
+        button {
+            background: #2563eb;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const TrainingScheduleGenerator = () => {
+            const [meanRatio, setMeanRatio] = React.useState(3);
+            const [numTrials, setNumTrials] = React.useState(10);
+            const [schedule, setSchedule] = React.useState([]);
+            const [showResults, setShowResults] = React.useState(false);
+
+            const generateSchedule = () => {
+                const probability = 1 / meanRatio;
+                const newSchedule = Array.from({ length: numTrials }, () => 
+                    Math.random() <= probability
+                );
+                setSchedule(newSchedule);
+                setShowResults(true);
+            };
+
+            const calculateActualRatio = () => {
+                const reinforcedTrials = schedule.filter(trial => trial).length;
+                return reinforcedTrials > 0 ? (numTrials / reinforcedTrials).toFixed(1) : 'N/A';
+            };
+
+            return (
+                <div className="p-4">
+                    <div className="card">
+                        <h1 className="text-2xl font-bold text-center mb-6">
+                            Search Training Schedule Generator
+                        </h1>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Mean Ratio (average searches before reward)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="20"
+                                    value={meanRatio}
+                                    onChange={(e) => setMeanRatio(Math.max(1, parseInt(e.target.value) || 1))}
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Number of Trials
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="50"
+                                    value={numTrials}
+                                    onChange={(e) => setNumTrials(Math.max(1, parseInt(e.target.value) || 1))}
+                                />
+                            </div>
+
+                            <button onClick={generateSchedule}>
+                                Generate Schedule
+                            </button>
+                        </div>
+
+                        {showResults && (
+                            <div className="mt-6">
+                                <div className="alert">
+                                    Actual ratio achieved: 1:{calculateActualRatio()}
+                                </div>
+
+                                <div className="mt-4">
+                                    <h3 className="font-medium mb-2">Training Plan:</h3>
+                                    <div className="space-y-2">
+                                        {schedule.map((shouldReward, index) => (
+                                            <div 
+                                                key={index}
+                                                className={`p-2 rounded ${
+                                                    shouldReward 
+                                                        ? 'bg-green-100 text-green-800' 
+                                                        : 'bg-gray-100 text-gray-800'
+                                                }`}
+                                            >
+                                                Trial {index + 1}: {shouldReward ? 'REWARD' : 'no reward'}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<TrainingScheduleGenerator />);
+    </script>
+</body>
+</html>
